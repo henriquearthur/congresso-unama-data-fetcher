@@ -1,0 +1,14 @@
+{
+  "name": "data_fetcher",
+  "version": "1.0.0",
+  "description": "A web scraper with Nightmare.js for retrieving data from eventos.sereduc.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Henrique Arthur <eu@henriquearthur.com.br>",
+  "license": "ISC",
+  "dependencies": {
+    "firebase": "^6.3.3"
+  }
+}
