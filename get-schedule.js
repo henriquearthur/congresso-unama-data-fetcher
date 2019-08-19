@@ -23,13 +23,64 @@ nightmare = Nightmare({ show: true });
 https = require('https');
 slugify = require('slugify');
 
+var jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+const { window } = new JSDOM();
+const { document } = (new JSDOM('')).window;
+global.document = document;
+
+var $ = jQuery = require('jquery')(window);
+
+/**
+ * Remove 'palestras' collection from Firestore
+ */
+function deleteCollection(db, collectionPath, batchSize) {
+    let collectionRef = db.collection(collectionPath);
+    let query = collectionRef.orderBy('__name__').limit(batchSize);
+
+    return new Promise((resolve, reject) => {
+        deleteQueryBatch(db, query, batchSize, resolve, reject);
+    });
+}
+
+function deleteQueryBatch(db, query, batchSize, resolve, reject) {
+    query.get()
+        .then((snapshot) => {
+            // When there are no documents left, we are done
+            if (snapshot.size == 0) {
+                return 0;
+            }
+
+            // Delete documents in a batch
+            let batch = db.batch();
+            snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+
+            return batch.commit().then(() => {
+                return snapshot.size;
+            });
+        }).then((numDeleted) => {
+            if (numDeleted === 0) {
+                resolve();
+                return;
+            }
+
+            // Recurse on the next process tick, to avoid
+            // exploding the stack.
+            process.nextTick(() => {
+                deleteQueryBatch(db, query, batchSize, resolve, reject);
+            });
+        })
+        .catch(reject);
+}
+
+console.log("Deleting 'palestras' collection...");
+deleteCollection(db, 'palestras', 100);
+
 /**
 * App
 */
-
-for (let index = 0; index < 5; index++) {
-    console.log("WARNING!! Don't forget to exclude previous data on Cloud Firestore manually.");
-}
 
 var urls = [
     "https://eventos.sereduc.com/evento/217/3-congresso-nacional-de-arquitetura-e-urbanismo-belempa",
@@ -106,7 +157,8 @@ urls.reduce(function (accumulator, url) {
                 type = palestra[4].trim(),
                 title = palestra[5].trim(),
                 speaker = palestra[6].trim(),
-                speaker_img = "https://eventos.sereduc.com" + palestra[7];
+                speaker_img = "https://eventos.sereduc.com" + palestra[7],
+                speaker_details_url = "https://eventos.sereduc.com" + palestra[8];
 
             if (palestra[7] == null) {
                 speaker_img = "";
@@ -119,9 +171,6 @@ urls.reduce(function (accumulator, url) {
                 type = titleAux;
             }
 
-            /**
-             * Add to Firebase
-             */
             var congresso;
 
             if (url == urls[0]) {
@@ -132,16 +181,46 @@ urls.reduce(function (accumulator, url) {
                 congresso = "engenharia";
             }
 
-            setDoc = db.collection('palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
-                event: congresso,
-                date: date,
-                hour_start: hourStart,
-                hour_end: hourEnd,
-                type: type,
-                title: title,
-                speaker: speaker,
-                speaker_img: speaker_img
-            });
+            if (palestra[8] != null) {
+                https.get(speaker_details_url, (resp) => {
+                    let data = '';
+
+                    // A chunk of data has been recieved.
+                    resp.on('data', (chunk) => {
+                        data += chunk;
+                    });
+
+                    // The whole response has been received. Print out the result.
+                    resp.on('end', () => {
+                        speaker_details = $(".Detalhes", data).text();
+
+                        db.collection('palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
+                            event: congresso,
+                            date: date,
+                            hour_start: hourStart,
+                            hour_end: hourEnd,
+                            type: type,
+                            title: title,
+                            speaker: speaker,
+                            speaker_img: speaker_img,
+                            speaker_details: speaker_details || ""
+                        });
+                    });
+                }).on("error", (err) => {
+                    console.log("Error: " + err.message);
+                });
+            } else {
+                db.collection('palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
+                    event: congresso,
+                    date: date,
+                    hour_start: hourStart,
+                    hour_end: hourEnd,
+                    type: type,
+                    title: title,
+                    speaker: speaker,
+                    speaker_img: speaker_img,
+                });
+            }
         });
     });
 });

@@ -9,6 +9,7 @@
   "author": "Henrique Arthur <eu@henriquearthur.com.br>",
   "license": "ISC",
   "dependencies": {
+    "exceljs": "^1.15.0",
     "firebase": "^6.3.3",
     "firebase-admin": "^8.3.0",
     "firebase-functions": "^3.2.0",
