@@ -66,7 +66,7 @@ function deleteQueryBatch(db, query, batchSize, resolve, reject) {
 }
 
 console.log("Deleting 'graduandos' collection...");
-deleteCollection(db, 'graduandos', 100);
+//deleteCollection(db, 'graduandos', 100);
 
 /**
  * Extract data from all .xlsx
@@ -79,6 +79,12 @@ files = [
 
 allPresentationData = [];
 
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+}
+
 files.forEach(file => {
     var workbook = new Excel.Workbook();
     workbook.xlsx.readFile(file)
@@ -88,6 +94,7 @@ files.forEach(file => {
                 // Extract data
                 var names = row.values[1];
                 var title = row.values[3];
+                var congress = row.values[4];
                 var type = row.values[5];
                 var presentationMethod = row.values[6];
                 var location = row.values[7];
@@ -99,15 +106,21 @@ files.forEach(file => {
                     names = names.split("  ");
                     names = names.filter(Boolean).map(string => string.trim());
 
+                    congress = congress.toLowerCase();
+                    congress = congress.replace("engenharias", "engenharia");
+                    congress = congress.replace("informática", "computacao");
+
+                    title = toTitleCase(title);
+                    type = toTitleCase(type);
+                    presentationMethod = toTitleCase(presentationMethod);
+
                     hour = hour.split("-");
                     hourStart = hour[0];
                     hourEnd = hour[1];
 
-                    congress = file.replace('undergrads_', '');
-                    congress = congress.replace('.xlsx', '');
-
                     // Final presentation object
                     presentation = {
+                        'congress': congress,
                         'names': names,
                         'title': title,
                         'type': type,
@@ -118,7 +131,7 @@ files.forEach(file => {
                         'hourEnd': hourEnd
                     };
 
-                    addToFirebase(congress, presentation);
+                    addToFirebase(presentation);
                 }
             });
         });
@@ -129,17 +142,18 @@ files.forEach(file => {
  * @param string congress
  * @param object presentation 
  */
-function addToFirebase(congress, presentation) {
-    console.log("Added " + slugify(presentation.title, { lower: true }) + " to " + congress);
+function addToFirebase(presentation) {
+    console.log("Added " + slugify(presentation.title, { lower: true }) + " to " + presentation.congress);
 
-    db.collection('graduandos').doc(congress + '-' + slugify(presentation.title, { lower: true })).set({
+    db.collection('graduandos').doc(presentation.congress + '-' + slugify(presentation.title, { lower: true })).set({
         'names': presentation.names,
         'title': presentation.title,
         'type': presentation.type,
-        'presentationMethod': presentation.presentationMethod,
+        'presentation_method': presentation.presentationMethod,
         'location': presentation.location,
         'date': presentation.date,
-        'hourStart': presentation.hourStart,
-        'hourEnd': presentation.hourEnd
+        'hour_start': presentation.hourStart,
+        'hour_end': presentation.hourEnd,
+        'congress': presentation.congress
     });
 }

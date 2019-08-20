@@ -195,7 +195,7 @@ urls.reduce(function (accumulator, url) {
                         speaker_details = $(".Detalhes", data).text();
 
                         db.collection('palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
-                            event: congresso,
+                            congress: congresso,
                             date: date,
                             hour_start: hourStart,
                             hour_end: hourEnd,
@@ -211,7 +211,7 @@ urls.reduce(function (accumulator, url) {
                 });
             } else {
                 db.collection('palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
-                    event: congresso,
+                    congress: congresso,
                     date: date,
                     hour_start: hourStart,
                     hour_end: hourEnd,
