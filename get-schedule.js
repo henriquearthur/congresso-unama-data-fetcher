@@ -1,4 +1,15 @@
 /**
+ * CUSTOM SETTINGS
+ */
+
+var urls = [
+    "https://eventos.sereduc.com/evento/325/1-congresso-nacional-de-artes-visuais-matematica-belempa",
+    "https://eventos.sereduc.com/evento/326/4-congresso-nacional-de-arquitetura-e-urbanismo-design-de-interiores-belempa",
+    "https://eventos.sereduc.com/evento/327/4-congresso-nacional-de-ciencia-da-computacao-redes-de-computadores-belempa",
+    "https://eventos.sereduc.com/evento/328/4-congresso-nacional-de-engenharia-civil-ambiental-e-sanitaria-producao-eletrica-mecanica-belempa"
+];
+
+/**
 * Firebase dependencies and settings
 */
 
@@ -81,12 +92,6 @@ deleteCollection(db, 'palestras', 100);
 /**
 * App
 */
-
-var urls = [
-    "https://eventos.sereduc.com/evento/217/3-congresso-nacional-de-arquitetura-e-urbanismo-belempa",
-    "https://eventos.sereduc.com/evento/215/3-congresso-nacional-de-informatica-belempa",
-    "https://eventos.sereduc.com/evento/216/3-congresso-nacional-de-engenharia-belempa"
-];
 
 var results = [];
 
@@ -173,6 +178,7 @@ urls.reduce(function (accumulator, url) {
 
             var congresso;
 
+            // TODO: fix this ID
             if (url == urls[0]) {
                 congresso = "arquitetura";
             } else if (url == urls[1]) {
@@ -194,7 +200,8 @@ urls.reduce(function (accumulator, url) {
                     resp.on('end', () => {
                         speaker_details = $(".Detalhes", data).text();
 
-                        db.collection('palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
+                        // TODO: fix Cloud Firestore collection here
+                        db.collection('2019').doc('eventos').doc(congresso + '-' + slugify(title, { lower: true })).set({
                             congress: congresso,
                             date: date,
                             hour_start: hourStart,
@@ -210,6 +217,7 @@ urls.reduce(function (accumulator, url) {
                     console.log("Error: " + err.message);
                 });
             } else {
+                // TODO: fix Cloud Firestore collection here
                 db.collection('palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
                     congress: congresso,
                     date: date,
