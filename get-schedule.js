@@ -102,7 +102,6 @@ urls.reduce(function (accumulator, url) {
                 console.log(msg);
             })
             .goto(url)
-            .catch(error => { })
             .wait('#wt9_wtMainContent_wt2_SilkUIFramework_wt17_block_wtContent_wt65')
             .evaluate(url => {
                 $("#wt9_wtMainContent_wt2_SilkUIFramework_wt17_block_wtContent_wt65").click();
@@ -148,7 +147,11 @@ urls.reduce(function (accumulator, url) {
             .then(function (resultsEvent) {
                 results.push(resultsEvent);
                 return results;
+            })
+            .catch(function (error) {
+                console.error('Nightmare failed:', error);
             });
+
     });
 }, Promise.resolve([])).then(function (results) {
     results.forEach(palestras => {
