@@ -86,8 +86,8 @@ function deleteQueryBatch(db, query, batchSize, resolve, reject) {
         .catch(reject);
 }
 
-console.log("Deleting 'palestras' collection...");
-deleteCollection(db, 'palestras', 100);
+console.log("Deleting '2019_palestras' collection...");
+deleteCollection(db, '2019_palestras', 100);
 
 /**
 * App
@@ -102,6 +102,7 @@ urls.reduce(function (accumulator, url) {
                 console.log(msg);
             })
             .goto(url)
+            .catch(error => { })
             .wait('#wt9_wtMainContent_wt2_SilkUIFramework_wt17_block_wtContent_wt65')
             .evaluate(url => {
                 $("#wt9_wtMainContent_wt2_SilkUIFramework_wt17_block_wtContent_wt65").click();
@@ -178,14 +179,10 @@ urls.reduce(function (accumulator, url) {
 
             var congresso;
 
-            // TODO: fix this ID
-            if (url == urls[0]) {
-                congresso = "arquitetura";
-            } else if (url == urls[1]) {
-                congresso = "computacao";
-            } else if (url == urls[2]) {
-                congresso = "engenharia";
-            }
+            if (url == urls[0]) { congresso = 'artes_e_matematica'; }
+            if (url == urls[1]) { congresso = 'arquitetura_e_design'; }
+            if (url == urls[2]) { congresso = 'computacao_redes_e_analise'; }
+            if (url == urls[3]) { congresso = 'engenharias'; }
 
             if (palestra[8] != null) {
                 https.get(speaker_details_url, (resp) => {
@@ -200,8 +197,7 @@ urls.reduce(function (accumulator, url) {
                     resp.on('end', () => {
                         speaker_details = $(".Detalhes", data).text();
 
-                        // TODO: fix Cloud Firestore collection here
-                        db.collection('2019').doc('eventos').doc(congresso + '-' + slugify(title, { lower: true })).set({
+                        db.collection('2019_palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
                             congress: congresso,
                             date: date,
                             hour_start: hourStart,
@@ -217,8 +213,7 @@ urls.reduce(function (accumulator, url) {
                     console.log("Error: " + err.message);
                 });
             } else {
-                // TODO: fix Cloud Firestore collection here
-                db.collection('palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
+                db.collection('2019_palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
                     congress: congresso,
                     date: date,
                     hour_start: hourStart,
