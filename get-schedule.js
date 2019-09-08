@@ -142,6 +142,9 @@ urls.reduce(function (accumulator, url) {
             .then(function (resultsEvent) {
                 results.push(resultsEvent);
                 return results;
+            })
+            .catch(function (error) {
+                console.error('Nightmare failed:', error);
             });
     });
 }, Promise.resolve([])).then(function (results) {
