@@ -24,7 +24,8 @@ db.collection('2019_geral').doc('informacoes').set({
     location_lng: -48.477676,
     location_name: 'Belém Hall',
     date_start: '08-11-2019',
-    date_end: '09-11-2019'
+    date_end: '09-11-2019',
+    date_undergrads: '09-11-2019',
 });
 
 db.collection('2019_congressos').doc('artes_e_matematica').set({
@@ -34,6 +35,7 @@ db.collection('2019_congressos').doc('artes_e_matematica').set({
     description: 'Em breve',
     image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_artes_e_matematica.jpg?alt=media&token=e729c1db-8131-4eaf-89ee-9918f1104d45',
     color: '#008A59',
+    link: 'https://eventos.sereduc.com/evento/325/1-congresso-nacional-de-artes-visuais-matematica-belempa',
 });
 
 db.collection('2019_congressos').doc('arquitetura_e_design').set({
@@ -43,6 +45,7 @@ db.collection('2019_congressos').doc('arquitetura_e_design').set({
     description: 'Em breve',
     image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_arquitetura_e_design.jpg?alt=media&token=65b3a425-ec6f-4cf5-9352-a9834e84d2b8',
     color: '#CD723B',
+    link: 'https://eventos.sereduc.com/evento/326/4-congresso-nacional-de-arquitetura-e-urbanismo-design-de-interiores-belempa',
 });
 
 db.collection('2019_congressos').doc('computacao_redes_e_analise').set({
@@ -52,6 +55,7 @@ db.collection('2019_congressos').doc('computacao_redes_e_analise').set({
     description: 'Em breve',
     image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_computacao_redes_e_analise.jpg?alt=media&token=f38c12f6-1824-4ea4-926d-c8b1e0531433',
     color: '#00695B',
+    link: 'https://eventos.sereduc.com/evento/327/4-congresso-nacional-de-ciencia-da-computacao-redes-de-computadores-belempa',
 });
 
 db.collection('2019_congressos').doc('engenharias').set({
@@ -61,4 +65,5 @@ db.collection('2019_congressos').doc('engenharias').set({
     description: 'Em breve',
     image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_engenharias.jpg?alt=media&token=fc5ce040-f149-41c7-a77c-fb82eca898ed',
     color: '#0C1780',
+    link: 'https://eventos.sereduc.com/evento/328/4-congresso-nacional-de-engenharia-civil-ambiental-e-sanitaria-producao-eletrica-mecanica-belempa',
 });

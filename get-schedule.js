@@ -4,6 +4,8 @@
 
 var urls = [
     "https://eventos.sereduc.com/evento/325/1-congresso-nacional-de-artes-visuais-matematica-belempa",
+
+    "https://eventos.sereduc.com/evento/325/1-congresso-nacional-de-artes-visuais-matematica-belempa",
     "https://eventos.sereduc.com/evento/326/4-congresso-nacional-de-arquitetura-e-urbanismo-design-de-interiores-belempa",
     "https://eventos.sereduc.com/evento/327/4-congresso-nacional-de-ciencia-da-computacao-redes-de-computadores-belempa",
     "https://eventos.sereduc.com/evento/328/4-congresso-nacional-de-engenharia-civil-ambiental-e-sanitaria-producao-eletrica-mecanica-belempa"
@@ -182,10 +184,10 @@ urls.reduce(function (accumulator, url) {
 
             var congresso;
 
-            if (url == urls[0]) { congresso = 'artes_e_matematica'; }
-            if (url == urls[1]) { congresso = 'arquitetura_e_design'; }
-            if (url == urls[2]) { congresso = 'computacao_redes_e_analise'; }
-            if (url == urls[3]) { congresso = 'engenharias'; }
+            if (url == urls[1]) { congresso = 'artes_e_matematica'; }
+            if (url == urls[2]) { congresso = 'arquitetura_e_design'; }
+            if (url == urls[3]) { congresso = 'computacao_redes_e_analise'; }
+            if (url == urls[4]) { congresso = 'engenharias'; }
 
             if (palestra[8] != null) {
                 https.get(speaker_details_url, (resp) => {
