@@ -14,56 +14,27 @@ db = admin.firestore();
 /**
  * Create DB structure for
  * 
- * 4º Congresso Nacional de Ciências Exatas e Tecnologias
+ * I Congresso Brasileiro de Direito e Constituição
  */
 
 db.collection('2019_geral').doc('informacoes').set({
-    location_address: 'R. Antônio Barreto, 1176',
-    location_district: 'Umarizal - Belém - Pará',
-    location_lat: -1.443250,
-    location_lng: -48.477676,
-    location_name: 'Belém Hall',
-    date_start: '08-11-2019',
-    date_end: '09-11-2019',
-    date_undergrads: '09-11-2019',
+    event_name: 'I Congresso Brasileiro de Direito e Constituição',
+    location_address: 'Av. Doutor Freitas, s/n',
+    location_district: 'Marco - Belém - Pará',
+    location_lat: -1.421702,
+    location_lng: -48.456776,
+    location_name: 'Hangar Convenções & Feiras da Amazônia',
+    date_start: '26-09-2019',
+    date_end: '28-09-2019',
+    date_undergrads: '27-09-2019',
 });
 
-db.collection('2019_congressos').doc('artes_e_matematica').set({
-    name: '1° Congresso Nacional de Artes Visuais e Matemática',
-    short_name: 'Artes Visuais e Matemática',
-    shortest_name: 'Artes e Matemática',
-    description: 'Em breve',
-    image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_artes_e_matematica.jpg?alt=media&token=e729c1db-8131-4eaf-89ee-9918f1104d45',
-    color: '#008A59',
-    link: 'https://eventos.sereduc.com/evento/325/1-congresso-nacional-de-artes-visuais-matematica-belempa',
-});
-
-db.collection('2019_congressos').doc('arquitetura_e_design').set({
-    name: '4° Congresso Nacional de Arquitetura e Urbanismo e Design de Interiores',
-    short_name: 'Arquitetura e Urbanismo e Design de Interiores',
-    shortest_name: 'Arquitetura e Design',
-    description: 'Em breve',
-    image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_arquitetura_e_design.jpg?alt=media&token=65b3a425-ec6f-4cf5-9352-a9834e84d2b8',
-    color: '#CD723B',
-    link: 'https://eventos.sereduc.com/evento/326/4-congresso-nacional-de-arquitetura-e-urbanismo-design-de-interiores-belempa',
-});
-
-db.collection('2019_congressos').doc('computacao_redes_e_analise').set({
-    name: '4° Congresso Nacional de Ciência da Computação, Redes de Computadores e Análise e Desenvolvimento de Sistemas',
-    short_name: 'Ciência da Computação, Redes de Computadores e Análise e Desenvolvimento de Sistemas',
-    shortest_name: 'Informática',
-    description: 'Em breve',
-    image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_computacao_redes_e_analise.jpg?alt=media&token=f38c12f6-1824-4ea4-926d-c8b1e0531433',
-    color: '#00695B',
-    link: 'https://eventos.sereduc.com/evento/327/4-congresso-nacional-de-ciencia-da-computacao-redes-de-computadores-belempa',
-});
-
-db.collection('2019_congressos').doc('engenharias').set({
-    name: '4° Congresso Nacional de Engenharia Civil, Ambiental e Sanitária, Produção, Elétrica e Mecânica',
-    short_name: 'Engenharia Civil, Ambiental e Sanitária, Produção, Elétrica e Mecânica',
-    shortest_name: 'Engenharias',
-    description: 'Em breve',
-    image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_engenharias.jpg?alt=media&token=fc5ce040-f149-41c7-a77c-fb82eca898ed',
-    color: '#0C1780',
-    link: 'https://eventos.sereduc.com/evento/328/4-congresso-nacional-de-engenharia-civil-ambiental-e-sanitaria-producao-eletrica-mecanica-belempa',
+db.collection('2019_congressos').doc('direito').set({
+    name: 'I Congresso Brasileiro de Direito e Constituição',
+    short_name: 'Direito e Constituição',
+    shortest_name: 'Direito e Constituição',
+    description: 'A UNAMA (Universidade da Amazônia), por intermédio do Instituto de Ciências Jurídicas e do Mestrado em Direitos Fundamentais, em parceria com a Faculdade Maurício de Nassau – UNINASSAU/Belém, promoverá de 26 a 28 de setembro, no Hangar Centro de Convenções e Feiras da Amazônia o I Congresso Brasileiro de Direito e Constituição, que tem como tema principal: "Direitos Fundamentais e novos direitos".\n\nProfissionais que são referências em diversas áreas do Direito comporão o quadro de palestrantes do evento.O jurista paraense Orlando Bitar é o homenageado do congresso, no ano em que se comemora seu centenário de nascimento.Orlando Chicre Miguel Bitar ocupou os mais relevantes cargos jurídicos do Estado do Pará, sendo considerado o maior constitucionalista paraense de todos os tempos.',
+    image: 'https://firebasestorage.googleapis.com/v0/b/congresso-unama.appspot.com/o/banner_direito.jpg?alt=media&token=7d3b2a0d-ce5b-4ccc-9b58-7231c0c82191',
+    color: '#014F25',
+    link: 'https://eventos.sereduc.com/evento/305/i-congresso-brasileiro-de-direito-e-constituicao-belempa',
 });

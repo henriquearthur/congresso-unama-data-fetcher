@@ -3,12 +3,9 @@
  */
 
 var urls = [
-    "https://eventos.sereduc.com/evento/325/1-congresso-nacional-de-artes-visuais-matematica-belempa",
+    "https://eventos.sereduc.com/evento/305/i-congresso-brasileiro-de-direito-e-constituicao-belempa",
 
-    "https://eventos.sereduc.com/evento/325/1-congresso-nacional-de-artes-visuais-matematica-belempa",
-    "https://eventos.sereduc.com/evento/326/4-congresso-nacional-de-arquitetura-e-urbanismo-design-de-interiores-belempa",
-    "https://eventos.sereduc.com/evento/327/4-congresso-nacional-de-ciencia-da-computacao-redes-de-computadores-belempa",
-    "https://eventos.sereduc.com/evento/328/4-congresso-nacional-de-engenharia-civil-ambiental-e-sanitaria-producao-eletrica-mecanica-belempa"
+    "https://eventos.sereduc.com/evento/305/i-congresso-brasileiro-de-direito-e-constituicao-belempa",
 ];
 
 /**
@@ -95,6 +92,12 @@ deleteCollection(db, '2019_palestras', 100);
 * App
 */
 
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+}
+
 var results = [];
 
 urls.reduce(function (accumulator, url) {
@@ -169,7 +172,8 @@ urls.reduce(function (accumulator, url) {
                 title = palestra[5].trim(),
                 speaker = palestra[6].trim(),
                 speaker_img = "https://eventos.sereduc.com" + palestra[7],
-                speaker_details_url = "https://eventos.sereduc.com" + palestra[8];
+                speaker_details_url = "https://eventos.sereduc.com" + palestra[8],
+                local = '';
 
             if (palestra[7] == null) {
                 speaker_img = "";
@@ -182,12 +186,51 @@ urls.reduce(function (accumulator, url) {
                 type = titleAux;
             }
 
-            var congresso;
+            if (title.toUpperCase().includes('AUDITÓRIO')) {
+                titleArr = title.split(' - ');
+                local = titleArr[0];
+                title = title.replace(local + ' - ', '');
 
-            if (url == urls[1]) { congresso = 'artes_e_matematica'; }
-            if (url == urls[2]) { congresso = 'arquitetura_e_design'; }
-            if (url == urls[3]) { congresso = 'computacao_redes_e_analise'; }
-            if (url == urls[4]) { congresso = 'engenharias'; }
+                if (title.toUpperCase().includes('AUDITÓRIO')) {
+                    titleArr = title.split(' – ');
+                    local = titleArr[0];
+                    title = title.replace(local + ' – ', '');
+
+                    if (title.toUpperCase().includes('AUDITÓRIO')) {
+                        titleArr = title.split(' : ');
+                        local = titleArr[0];
+                        title = title.replace(local + ' : ', '');
+                    }
+                }
+            }
+
+            local = local.replace('01', '1');
+            local = local.replace('02', '2');
+            local = local.replace('03', '3');
+
+            if (speaker.includes('-')) {
+                speakerArr = speaker.split('-');
+                speaker = speakerArr[0].trim();
+            }
+
+            if (speaker.includes('–')) {
+                speakerArr = speaker.split('–');
+                speaker = speakerArr[0].trim();
+            }
+
+            if (speaker === speaker.toUpperCase()) {
+                speaker = toTitleCase(speaker);
+            }
+
+            local = toTitleCase(local);
+
+            var congresso;
+            if (url == urls[1]) { congresso = 'direito'; }
+
+            // if (url == urls[1]) { congresso = 'artes_e_matematica'; }
+            // if (url == urls[2]) { congresso = 'arquitetura_e_design'; }
+            // if (url == urls[3]) { congresso = 'computacao_redes_e_analise'; }
+            // if (url == urls[4]) { congresso = 'engenharias'; }
 
             if (palestra[8] != null) {
                 https.get(speaker_details_url, (resp) => {
@@ -202,13 +245,14 @@ urls.reduce(function (accumulator, url) {
                     resp.on('end', () => {
                         speaker_details = $(".Detalhes", data).text();
 
-                        db.collection('2019_palestras').doc(congresso + '-' + slugify(title, { lower: true })).set({
+                        db.collection('2019_palestras').doc(congresso + '-' + slugify(title + '-' + speaker, { lower: true })).set({
                             congress: congresso,
                             date: date,
                             hour_start: hourStart,
                             hour_end: hourEnd,
                             type: type,
                             title: title,
+                            local: local,
                             speaker: speaker,
                             speaker_img: speaker_img,
                             speaker_details: speaker_details || ""
@@ -225,6 +269,7 @@ urls.reduce(function (accumulator, url) {
                     hour_end: hourEnd,
                     type: type,
                     title: title,
+                    local: local,
                     speaker: speaker,
                     speaker_img: speaker_img,
                 });

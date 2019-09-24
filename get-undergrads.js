@@ -22,7 +22,7 @@ var Excel = require('exceljs');
 slugify = require('slugify');
 
 /**
- * Remove 'graduandos' collection from Firestore
+ * Remove '2019_graduandos' collection from Firestore
  */
 function deleteCollection(db, collectionPath, batchSize) {
     let collectionRef = db.collection(collectionPath);
@@ -65,16 +65,14 @@ function deleteQueryBatch(db, query, batchSize, resolve, reject) {
         .catch(reject);
 }
 
-console.log("Deleting 'graduandos' collection...");
-//deleteCollection(db, 'graduandos', 100);
+console.log("Deleting '2019_graduandos' collection...");
+//deleteCollection(db, '2019_graduandos', 100);
 
 /**
  * Extract data from all .xlsx
  */
 files = [
-    'undergrads_arquitetura.xlsx',
-    'undergrads_computacao.xlsx',
-    'undergrads_engenharia.xlsx',
+    'undergrads_direito.xlsx',
 ];
 
 allPresentationData = [];
@@ -93,42 +91,41 @@ files.forEach(file => {
             worksheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
                 // Extract data
                 var names = row.values[1];
-                var title = row.values[3];
-                var congress = row.values[4];
-                var type = row.values[5];
-                var presentationMethod = row.values[6];
-                var location = row.values[7];
-                var date = "26-10-2018";
-                var hour = row.values[9];
+                var title = row.values[2];
+                var congress = 'direito';
+                //var type = row.values[5];
+                //var presentationMethod = row.values[6];
+                var location = row.values[3];
+                var date = "27-09-2019";
+                var hour = row.values[4];
 
-                if (names != undefined && names != "AUTOR PRINCIPAL") {
+                if (names != undefined && names != "RESUMOS APROVADOS" && names.trim() != "" && title.trim() != "") {
                     // Filter and organize data
                     names = names.split("  ");
                     names = names.filter(Boolean).map(string => string.trim());
 
                     congress = congress.toLowerCase();
-                    congress = congress.replace("engenharias", "engenharia");
-                    congress = congress.replace("informática", "computacao");
+                    //congress = congress.replace("engenharias", "engenharia");
+                    //congress = congress.replace("informática", "computacao");
 
                     title = toTitleCase(title);
-                    type = toTitleCase(type);
-                    presentationMethod = toTitleCase(presentationMethod);
+                    //type = toTitleCase(type);
+                    //presentationMethod = toTitleCase(presentationMethod);
 
-                    hour = hour.split("-");
-                    hourStart = hour[0];
-                    hourEnd = hour[1];
+                    hour = hour.replace('h', ':').trim();
+
+                    if (hour.length == 3) {
+                        hour = hour + '00';
+                    }
 
                     // Final presentation object
                     presentation = {
                         'congress': congress,
                         'names': names,
                         'title': title,
-                        'type': type,
-                        'presentationMethod': presentationMethod,
                         'location': location,
                         'date': date,
-                        'hourStart': hourStart,
-                        'hourEnd': hourEnd
+                        'hour': hour,
                     };
 
                     addToFirebase(presentation);
@@ -145,15 +142,16 @@ files.forEach(file => {
 function addToFirebase(presentation) {
     console.log("Added " + slugify(presentation.title, { lower: true }) + " to " + presentation.congress);
 
-    db.collection('graduandos').doc(presentation.congress + '-' + slugify(presentation.title, { lower: true })).set({
+    db.collection('2019_graduandos').doc(presentation.congress + '-' + slugify(presentation.title, { lower: true })).set({
         'names': presentation.names,
         'title': presentation.title,
-        'type': presentation.type,
-        'presentation_method': presentation.presentationMethod,
+        //'type': presentation.type,
+        //'presentation_method': presentation.presentationMethod,
         'location': presentation.location,
         'date': presentation.date,
-        'hour_start': presentation.hourStart,
-        'hour_end': presentation.hourEnd,
+        'hour': presentation.hour,
+        //'hour_start': presentation.hourStart,
+        //'hour_end': presentation.hourEnd,
         'congress': presentation.congress
     });
 }
