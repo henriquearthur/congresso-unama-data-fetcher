@@ -1,31 +1,30 @@
-/** Imports */
-const database = require('./database/database');
-const helpers = require('./helpers/helpers');
-const path = require('path');
-const Nightmare = require('nightmare');
-nightmare = Nightmare({ show: true });
-const slugify = require('slugify');
+/**
+ * Imports
+ */
+const https = require('https');
 const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
-const { window } = new JSDOM();
-const { document } = (new JSDOM('')).window;
-global.document = document;
-const $ = require('jquery')(window);
 
-/** Global config */
-const url = 'https://eventos.sereduc.com';
+const database = require('./database/database');
+const slugify = require('slugify');
 
-/** App */
-function app() {
-    console.log('Executando app...');
+/**
+ * App functions
+ */
+function getEventsUrl() {
+    console.log("Obtendo URLs dos eventos...");
+    https.get('https://eventos.sereduc.com', (resp) => {
+        let data = '';
 
-    return nightmare
+        // A chunk of data has been recieved.
+        resp.on('data', (chunk) => {
+            data += chunk;
+        });
 
-        .goto(url)
-        // Wait for div which contains all events
-        .wait('#wt10_wtMainContent_wt8_wtConteudoContainer')
-        .evaluate(() => {
-            console.log('Iterando eventos...');
+        // The whole response has been received. Print out the result.
+        resp.on('end', () => {
+            var { JSDOM } = jsdom;
+            var dom = new JSDOM(data);
+            var $ = (require('jquery'))(dom.window);
 
             var eventsUrl = [];
 
@@ -40,142 +39,163 @@ function app() {
                 }
             });
 
-            return eventsUrl;
-        })
-        .then((eventsUrl) => {
             eventsUrl = eventsUrl.map((value) => 'https://eventos.sereduc.com/' + value);
             console.log('eventsUrl:', eventsUrl);
 
-            eventsUrl.reduce(function (accumulator, eventUrl) {
-                return accumulator.then(function (result) {
-                    console.log('Executando evento (' + eventUrl + ')...');
-
-                    return nightmare
-                        .on('console', function (log, msg) {
-                            return console.log(msg);
-                        })
-                        .goto(eventUrl)
-                        .wait('#wt9_wtMainContent_wt2_SilkUIFramework_wt17_block_wtContent_wt65')
-                        .evaluate((eventUrl) => {
-                            console.log('Obtendo dados do evento (' + eventUrl + ')...');
-
-                            var eventTitle = $(document).attr('title').split('| Eventos')[0].trim();
-                            var eventDescription = $("#wt9_wtMainContent_wt2_wtTabContentsContainerDescricao .TabContent.ContainerTexto[data-tab='sobre']").text();
-                            result = [];
-
-                            // Para cada dia na aba Programação
-                            $("#wt9_wtMainContent_wt2_wt47_wtProgramacaoContainer .ProgramacaoItem").each(function (index, element) {
-                                var $el = $(element);
-                                var date = $el.data('date');
-
-                                // Para cada palestra deste dia
-                                $el.find('.Item.OSInline').each(function (index, elementLecture) {
-                                    var $lecture = $(elementLecture);
-
-                                    // Hour
-                                    var hour = $lecture.find('div.Cinza').text().split('-');
-                                    var hourStart = hour[0];
-                                    var hourEnd = hour[1];
-
-                                    // Lecture information
-                                    var type = $lecture.find('span.Azul:nth-child(3)').text();
-                                    var title = $lecture.find('span.Verde').text();
-                                    var description = $lecture.find('.Wrapper.OSInline').text();
-
-                                    // Speaker information
-                                    var speakerName = $lecture.find('.ConferencistaImagem .Nome').text();
-                                    var speakerImg = $lecture.find('.ConferencistaImagem img').attr('src');
-
-                                    // Get speaker details
-                                    var speakerDetailsUrl = $lecture.find('.ConferencistaImagem').parent().attr('href');
-
-                                    result.push({
-                                        'date': date,
-                                        'hour_start': hourStart,
-                                        'hour_end': hourEnd,
-                                        'type': type,
-                                        'title': title,
-                                        'description': description,
-                                        'speaker_name': speakerName,
-                                        'speaker_img': speakerImg,
-                                        'speaker_details_url': speakerDetailsUrl,
-                                    });
-                                });
-                            });
-
-                            result.push({
-                                'title': eventTitle.toString(),
-                                'description': eventDescription,
-                                'lectures': result,
-                            });
-
-                            return result;
-                        }, eventUrl)
-                        .end()
-                        .then(result => {
-                            return result;
-                        });
-                });
-            }, Promise.resolve([])).then(function (result) {
-                console.log("Promise resolved");
-                console.log(result);
-
-                // if (speakerDetailsUrl != null) {
-                //     console.log('Obtendo informações de palestrante (' + speakerDetailsUrl + ')');
-                //     speakerDetailsUrl = 'https://eventos.sereduc.com' + speakerDetailsUrl;
-
-                //     var https = require('https');
-
-                //     https.get(speaker_details_url, (resp) => {
-                //         let data = '';
-
-                //         // A chunk of data has been recieved.
-                //         resp.on('data', (chunk) => {
-                //             data += chunk;
-                //         });
-
-                //         // The whole response has been received. Print out the result.
-                //         resp.on('end', () => {
-                //             speakerDetails = $(".Detalhes", data).text();
-                //         });
-                //     }).on("error", (err) => {
-                //         console.log('https error: ' + err.message);
-                //     });
-                // }
-
-                // if (data != null && data != undefined && data.title != undefined) {
-                //     console.log('Adicionando dados do evento (' + eventUrl + ') no Firestore...');
-                //     print(data);
-
-                //     var congressId = slugify(data.title, { lower: true });
-
-                //     // Informações gerais do evento
-                //     database.firestore.collection('2019_v1.1_congressos')
-                //         .doc(congressId).set({
-                //             'title': data.title,
-                //             'description': data.description
-                //         });
-
-                //     // Palestras do evento
-                //     data.lectures.forEach(lecture => {
-                //         var lectureId = slugify(congressId + '_' + lecture.title, { lower: true });
-
-                //         lecture.congress = congressId;
-
-                //         database.firestore.collection('2019_v1.1_palestras')
-                //             .doc(lectureId).set(lecture).finally(() => {
-                //                 console.log('' + lectureId + ' adicionado no Firestore.');
-                //             });
-                //     });
-                // }
-            });
-        })
-        .catch((error) => {
-            console.error('ERRO - Nightmare: ', error);
-            console.info('Executando novamente...');
-
-            app();
+            eventsUrl.forEach(url => getEventData(url));
         });
+
+    }).on("error", (err) => {
+        console.log("[https] Error: " + err.message);
+    });
 }
 
-app();
+function getEventData(url) {
+    console.log("Obtendo dados do evento (" + url + ")");
+
+    https.get(url, (resp) => {
+        let data = '';
+
+        // A chunk of data has been recieved.
+        resp.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        // The whole response has been received. Print out the result.
+        resp.on('end', () => {
+            var { JSDOM } = jsdom;
+            var dom = new JSDOM(data);
+            var $ = (require('jquery'))(dom.window);
+
+            console.log("Extraindo dados do evento obtido (" + url + ")");
+
+            var eventTitle = dom.window.document.title.split('| Eventos')[0].trim();
+            var eventDescription = $("#wt9_wtMainContent_wt2_wtTabContentsContainerDescricao .TabContent.ContainerTexto[data-tab='sobre']").text();
+            var eventImg = $("#wt9_wtMainContent .ViewEvento > .Img img").attr('src');
+
+            var lectures = [];
+
+            // Para cada dia na aba Programação
+            $("#wt9_wtMainContent_wt2_wt47_wtProgramacaoContainer .ProgramacaoItem").each(function (index, element) {
+                var $el = $(element);
+                var date = $el.data('date');
+
+                // Para cada palestra deste dia
+                $el.find('.Item.OSInline').each(async function (index, elementLecture) {
+                    var $lecture = $(elementLecture);
+
+                    // Hour
+                    var hour = $lecture.find('div.Cinza').text().split('-');
+                    var hourStart = hour[0];
+                    var hourEnd = hour[1];
+
+                    // Lecture information
+                    var type = $lecture.find('span.Azul:nth-child(3)').text();
+                    var title = $lecture.find('span.Verde').text();
+                    var description = $lecture.find('.Wrapper.OSInline').text();
+
+                    // Speaker information
+                    var speakerName = $lecture.find('.ConferencistaImagem .Nome').text();
+                    var speakerImg = 'https://eventos.sereduc.com' + $lecture.find('.ConferencistaImagem img').attr('src') || '';
+
+                    // Get speaker details
+                    var speakerDetailsUrl = $lecture.find('.ConferencistaImagem').parent().attr('href');
+
+                    lectures.push({
+                        'date': date,
+                        'hour_start': hourStart,
+                        'hour_end': hourEnd,
+                        'type': type,
+                        'title': title,
+                        'description': description,
+                        'speaker_name': speakerName,
+                        'speaker_img': speakerImg,
+                        'speaker_details_url': speakerDetailsUrl,
+                    });
+                });
+            });
+
+            processEventData({
+                'title': eventTitle,
+                'description': eventDescription,
+                'image': eventImg,
+                'lectures': lectures
+            });
+        });
+
+    }).on("error", (err) => {
+        console.log("Error: " + err.message);
+    });
+}
+
+async function processEventData(data) {
+    console.log("Processando dados do evento: " + data.title);
+
+    // Informações gerais do evento
+    var congressId = slugify(data.title, { lower: true });
+    console.log("Inserindo informações gerais do evento no Firestore (" + congressId + ")");
+
+    database.firestore.collection('2019_v1.1_congressos')
+        .doc(congressId)
+        .set({
+            'title': data.title,
+            'description': data.description,
+            'image': data.image,
+        });
+
+    for (var lecture of data.lectures) {
+        // Obter informações adicionais do palestrante se houver dados suficientes
+        if (lecture.speaker_details_url != undefined &&
+            lecture.speaker_details_url != '' &&
+            lecture.speaker_details_url != '/Popup_EventoConferencista.aspx?ConferencistaId=0') {
+            var url = 'https://eventos.sereduc.com' + lecture.speaker_details_url;
+            lecture.speaker_details = await getSpeakerDetails(url);
+        }
+
+        // Processando o objeto lecture
+        var lectureId = slugify(congressId + '_' + lecture.title, { lower: true });
+
+        lecture.congress = congressId;
+        delete lecture.speaker_details_url;
+
+        // Inserindo dados no Firestore
+        console.log("Inserindo palestra " + lectureId + " no congresso " + congressId)
+
+        database.firestore.collection('2019_v1.1_palestras')
+            .doc(lectureId)
+            .set(lecture)
+            .finally(() => console.log('Adicionado no Firestore: ' + lectureId));
+    }
+}
+
+function getSpeakerDetails(url) {
+    console.log('Obtendo informações de palestrante (' + url + ')');
+
+    return new Promise((resolve, reject) => {
+        https.get(url, (resp) => {
+            let data = '';
+
+            // A chunk of data has been recieved.
+            resp.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            // The whole response has been received. Print out the result.
+            resp.on('end', () => {
+                var { JSDOM } = jsdom;
+                var dom = new JSDOM(data);
+                var $ = (require('jquery'))(dom.window);
+
+                speakerDetails = $(".Detalhes", data).text();
+
+                resolve(speakerDetails);
+            });
+
+        }).on("error", (err) => {
+            reject(err);
+        });
+    });
+}
+
+/** Start app */
+getEventsUrl();
