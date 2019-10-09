@@ -9,6 +9,8 @@
   "author": "Henrique Arthur <eu@henriquearthur.com.br>",
   "license": "ISC",
   "dependencies": {
+    "@google/maps": "^1.0.1",
+    "colorthief": "^2.3.0",
     "exceljs": "^1.15.0",
     "firebase": "^6.3.3",
     "firebase-admin": "^8.3.0",

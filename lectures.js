@@ -4,8 +4,9 @@
 const https = require('https');
 const jsdom = require("jsdom");
 
-const database = require('./database/database');
+const firebase = require('./firebase/firebase');
 const slugify = require('slugify');
+
 
 /**
  * App functions
@@ -72,6 +73,19 @@ function getEventData(url) {
             var eventTitle = dom.window.document.title.split('| Eventos')[0].trim();
             var eventDescription = $("#wt9_wtMainContent_wt2_wtTabContentsContainerDescricao .TabContent.ContainerTexto[data-tab='sobre']").text();
             var eventImg = $("#wt9_wtMainContent .ViewEvento > .Img img").attr('src');
+            var eventLocation = $(".ContainerLocalizacao .dados").text();
+            var eventLink = url;
+
+            var eventDateText = $("#wt9_wtMainContent .ViewEvento .Data").text();
+            var eventDateArr = eventDateText.split('até');
+            var eventDateStart = eventDateArr[0].replace('De', '').trim();
+            var eventDateEnd = eventDateArr[1].trim();
+            var eventDateEndArr = eventDateEnd.split('/');
+            var eventDateYear = eventDateEndArr[2];
+            eventDateStart = eventDateStart + '-' + eventDateYear;
+
+            eventDateStart = eventDateStart.replace(/\//g, '-');
+            eventDateEnd = eventDateEnd.replace(/\//g, '-');
 
             var lectures = [];
 
@@ -96,7 +110,11 @@ function getEventData(url) {
 
                     // Speaker information
                     var speakerName = $lecture.find('.ConferencistaImagem .Nome').text();
-                    var speakerImg = 'https://eventos.sereduc.com' + $lecture.find('.ConferencistaImagem img').attr('src') || '';
+                    var speakerImg = $lecture.find('.ConferencistaImagem img').attr('src') || '';
+
+                    if (speakerImg != undefined && speakerImg != '') {
+                        speakerImg = 'https://eventos.sereduc.com' + speakerImg;
+                    }
 
                     // Get speaker details
                     var speakerDetailsUrl = $lecture.find('.ConferencistaImagem').parent().attr('href');
@@ -118,7 +136,11 @@ function getEventData(url) {
             processEventData({
                 'title': eventTitle,
                 'description': eventDescription,
+                'location': eventLocation,
                 'image': eventImg,
+                'link': eventLink,
+                'date_start': eventDateStart,
+                'date_end': eventDateEnd,
                 'lectures': lectures
             });
         });
@@ -131,16 +153,97 @@ function getEventData(url) {
 async function processEventData(data) {
     console.log("Processando dados do evento: " + data.title);
 
+    // Transformar nome do local em geocode
+    // const googleMapsClient = require('@google/maps').createClient({
+    //     key: 'AIzaSyDG4IHDx29bO1jyyvrJzq5hoVAHK730wXw',
+    //     Promise: Promise
+    // });
+
+    // geocode = await googleMapsClient.geocode({ address: data.location }).asPromise();
+    // console.log(geocode);
+
     // Informações gerais do evento
     var congressId = slugify(data.title, { lower: true });
     console.log("Inserindo informações gerais do evento no Firestore (" + congressId + ")");
 
-    database.firestore.collection('2019_v1.1_congressos')
+    firebase.firestore.collection('2019_v1.1_congressos')
         .doc(congressId)
         .set({
             'title': data.title,
             'description': data.description,
-            'image': data.image,
+            'date_start': data.date_start,
+            'date_end': data.date_end,
+            // TODO: Get main color from downloaded image and send to Firebase
+            'color': '#4caf50'
+        }).then(function () {
+            // Upload image
+            var urlPlugin = require("url");
+            var path = require("path");
+            var parsed = urlPlugin.parse(data.image);
+
+            var pathname = parsed.pathname;
+            var basename = path.basename(parsed.pathname);
+
+            var fs = require('fs'),
+                request = require('request');
+
+            var downloadImage = function (uri, filename, callback) {
+                request.head(uri, function (err, res, body) {
+                    if (res) {
+                        request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+                    } else {
+                        callback();
+                    }
+                });
+            };
+
+            // var imageToDownload = data.image;
+            var imageToDownload;
+
+            if (congressId == 'vi-confluencias-belempa') {
+                imageToDownload = 'https://i.imgur.com/pPKBco9.jpg';
+            } else if (congressId == 'x-cods-perspectiva-em-inovacao-e-governanca-belempa') {
+                imageToDownload = 'https://i.imgur.com/rxgDjLu.jpg';
+            } else if (congressId == '4-congresso-nacional-de-ciencias-exatas-e-tecnologia-belempa') {
+                imageToDownload = 'https://i.imgur.com/tT3Cuix.jpg';
+
+            }
+            downloadImage(imageToDownload, 'event_images_tmp/' + basename, function () {
+                console.log("Finished request for download event image (" + basename + ") (congressId = " + congressId + ").");
+
+                // Get dominant color
+                const ColorThief = require('colorthief');
+                const img = 'event_images_tmp/' + basename;
+                ColorThief.getColor(img)
+                    .then(color => {
+                        console.log("Updated color for " + congressId);
+                        firebase.firestore.collection('2019_v1.1_congressos')
+                            .doc(congressId)
+                            .update({
+                                'color': color
+                            });
+                    })
+                    .catch(err => console.log(err));
+
+
+                firebase.bucket.upload('event_images_tmp/' + basename);
+                console.log('Uploaded ' + basename + ' to Firebase.');
+
+                var file = firebase.bucket.file(basename);
+                file.getSignedUrl({
+                    action: 'read',
+                    expires: '03-09-2491'
+                }).then(signedUrls => {
+                    var imageUrl = signedUrls[0];
+                    console.log("Firebase Storage URL: " + imageUrl);
+
+                    firebase.firestore.collection('2019_v1.1_congressos')
+                        .doc(congressId)
+                        .update({
+                            'image': imageUrl
+                        });
+                });
+            });
         });
 
     for (var lecture of data.lectures) {
@@ -158,10 +261,12 @@ async function processEventData(data) {
         lecture.congress = congressId;
         delete lecture.speaker_details_url;
 
-        // Inserindo dados no Firestore
-        console.log("Inserindo palestra " + lectureId + " no congresso " + congressId)
+        //firebase.bucket.file('  ');
 
-        database.firestore.collection('2019_v1.1_palestras')
+        // Inserindo dados no Firestore
+        //console.log("Inserindo palestra " + lectureId + " no congresso " + congressId);
+
+        firebase.firestore.collection('2019_v1.1_palestras')
             .doc(lectureId)
             .set(lecture)
             .finally(() => console.log('Adicionado no Firestore: ' + lectureId));
