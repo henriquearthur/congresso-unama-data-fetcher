@@ -73,7 +73,7 @@ function getEventData(url) {
             var eventTitle = dom.window.document.title.split('| Eventos')[0].trim();
             var eventDescription = $("#wt9_wtMainContent_wt2_wtTabContentsContainerDescricao .TabContent.ContainerTexto[data-tab='sobre']").text();
             var eventImg = $("#wt9_wtMainContent .ViewEvento > .Img img").attr('src');
-            var eventLocation = $(".ContainerLocalizacao .dados").text();
+            var eventLocation = $(".ContainerLocalizacao .Endereco:first-child .Dados").text();
             var eventLink = url;
 
             var eventDateText = $("#wt9_wtMainContent .ViewEvento .Data").text();
@@ -154,13 +154,10 @@ async function processEventData(data) {
     console.log("Processando dados do evento: " + data.title);
 
     // Transformar nome do local em geocode
-    // const googleMapsClient = require('@google/maps').createClient({
-    //     key: 'AIzaSyDG4IHDx29bO1jyyvrJzq5hoVAHK730wXw',
-    //     Promise: Promise
-    // });
-
-    // geocode = await googleMapsClient.geocode({ address: data.location }).asPromise();
-    // console.log(geocode);
+    const googleMapsClient = require('@google/maps').createClient({
+        key: 'AIzaSyDG4IHDx29bO1jyyvrJzq5hoVAHK730wXw',
+        Promise: Promise
+    });
 
     // Informações gerais do evento
     var congressId = slugify(data.title, { lower: true });
@@ -173,9 +170,28 @@ async function processEventData(data) {
             'description': data.description,
             'date_start': data.date_start,
             'date_end': data.date_end,
-            // TODO: Get main color from downloaded image and send to Firebase
-            'color': '#4caf50'
         }).then(function () {
+            // Location
+            if (data.location != '') {
+                googleMapsClient.geocode({ address: data.location }).asPromise()
+                    .then((response) => {
+                        if (response.json.results.length > 0) {
+                            var lat = response.json.results[0].geometry.location.lat;
+                            var lng = response.json.results[0].geometry.location.lng;
+
+                            firebase.firestore.collection('2019_v1.1_congressos')
+                                .doc(congressId)
+                                .update({
+                                    'location_lat': lat,
+                                    'location_lng': lng
+                                });
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            }
+
             // Upload image
             var urlPlugin = require("url");
             var path = require("path");
