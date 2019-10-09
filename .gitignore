@@ -2,3 +2,4 @@ node_modules
 .history
 output.txt
 event_images_tmp/*
+!event_images_tmp/.gitkeep
