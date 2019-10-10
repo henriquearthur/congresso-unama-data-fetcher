@@ -213,17 +213,19 @@ async function processEventData(data) {
                 });
             };
 
-            // var imageToDownload = data.image;
+            /*
             var imageToDownload;
-
+            
             if (congressId == 'vi-confluencias-belempa') {
                 imageToDownload = 'https://i.imgur.com/pPKBco9.jpg';
             } else if (congressId == 'x-cods-perspectiva-em-inovacao-e-governanca-belempa') {
                 imageToDownload = 'https://i.imgur.com/rxgDjLu.jpg';
             } else if (congressId == '4-congresso-nacional-de-ciencias-exatas-e-tecnologia-belempa') {
                 imageToDownload = 'https://i.imgur.com/tT3Cuix.jpg';
-
             }
+            */
+            var imageToDownload = data.image;
+
             downloadImage(imageToDownload, 'event_images_tmp/' + basename, function () {
                 console.log("Finished request for download event image (" + basename + ") (congressId = " + congressId + ").");
 
