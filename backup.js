@@ -19,5 +19,39 @@ firestoreService
             }
 
             console.log("Backup saved!");
+
+            // Send .json file to e-mail
+            const nodemailer = require('nodemailer');
+
+            const config = {
+                mailserver: {
+                    host: 'smtp.zoho.com',
+                    port: 587,
+                    secure: false,
+                    auth: {
+                        user: 'eu@henriquearthur.com.br',
+                        pass: 'AYSSs1eXgPK0'
+                    }
+                },
+                mail: {
+                    from: 'eu@henriquearthur.com.br',
+                    to: ['eu@henriquearthur.com.br', 'hnrq.art@gmail.com'],
+                    subject: '[Congressos Unama Data Fetcher] Backup realizado',
+                    text: 'Arquivo .json em anexo.',
+                    attachments: [
+                        {
+                            filename: filename,
+                            content: fs.createReadStream('backups/' + filename)
+                        },
+                    ]
+                },
+            };
+
+            const sendMail = async ({ mailserver, mail }) => {
+                let transporter = nodemailer.createTransport(mailserver);
+                let info = await transporter.sendMail(mail);
+            };
+
+            sendMail(config).catch(console.error);
         });
     });
