@@ -29,7 +29,7 @@ function getEventsUrl() {
 
             var eventsUrl = [];
 
-            $(".ItemEvento").each(function (index, element) {
+            $(".ItemEvento").each(function(index, element) {
                 var titulo = $(element).find('span.Titulo').text().trim();
 
                 if (titulo.toLowerCase().includes('belém/pa')) {
@@ -70,12 +70,14 @@ function getEventData(url) {
 
             console.log("Extraindo dados do evento obtido (" + url + ")");
 
+            // General info
             var eventTitle = dom.window.document.title.split('| Eventos')[0].trim();
             var eventDescription = $("#wt9_wtMainContent_wt2_wtTabContentsContainerDescricao .TabContent.ContainerTexto[data-tab='sobre']").text().trim().replace(/\n$/, "");
             var eventImg = $("#wt9_wtMainContent .ViewEvento > .Img img").attr('src');
             var eventLocation = $(".ContainerLocalizacao .Endereco:first-child .Dados").text();
             var eventLink = url;
 
+            // Event date
             var eventDateText = $("#wt9_wtMainContent .ViewEvento .Data").text();
             var eventDateArr = eventDateText.split('até');
             var eventDateStart = eventDateArr[0].replace('De', '').trim();
@@ -87,15 +89,44 @@ function getEventData(url) {
             eventDateStart = eventDateStart.replace(/\//g, '-');
             eventDateEnd = eventDateEnd.replace(/\//g, '-');
 
+            // Event registration
+            var eventTypes = [];
+            var eventRegistration = [];
+
+            $(".Meio .EventoInfo table tbody tr:first-child td").each(function(index, element) {
+                var registrationType = $(this).find('div').text();
+                eventTypes.push(registrationType);
+            });
+
+            for (let index = 0; index < eventTypes.length; index++) {
+                var type = eventTypes[index];
+                var elIndex = index + 1;
+
+                $(".Meio .EventoInfo table tbody tr:nth-child(n+2)").each(function(index, element) {
+                    var td = $(this).find('td:nth-child(' + elIndex + ')');
+                    var registrationDate = td.find('.data').text();
+                    var registrationValue = td.find('.val').text();
+
+                    if (registrationDate != '' && registrationValue != '') {
+                        eventRegistration.push({
+                            'type': type,
+                            'date': registrationDate,
+                            'value': registrationValue
+                        });
+                    }
+                });
+            }
+
+            // Lectures
             var lectures = [];
 
             // Para cada dia na aba Programação
-            $("#wt9_wtMainContent_wt2_wt47_wtProgramacaoContainer .ProgramacaoItem").each(function (index, element) {
+            $("#wt9_wtMainContent_wt2_wt47_wtProgramacaoContainer .ProgramacaoItem").each(function(index, element) {
                 var $el = $(element);
                 var date = $el.data('date');
 
                 // Para cada palestra deste dia
-                $el.find('.Item.OSInline').each(async function (index, elementLecture) {
+                $el.find('.Item.OSInline').each(async function(index, elementLecture) {
                     var $lecture = $(elementLecture);
 
                     // Hour
@@ -141,6 +172,7 @@ function getEventData(url) {
                 'link': eventLink,
                 'date_start': eventDateStart,
                 'date_end': eventDateEnd,
+                'registration': eventRegistration,
                 'lectures': lectures
             });
         });
@@ -168,9 +200,11 @@ async function processEventData(data) {
         .set({
             'title': data.title,
             'description': data.description,
+            'registration': data.registration,
+            'link': data.link,
             'date_start': data.date_start,
             'date_end': data.date_end,
-        }).then(function () {
+        }).then(function() {
             // Location
             if (data.location != '') {
                 googleMapsClient.geocode({ address: data.location }).asPromise()
@@ -205,8 +239,8 @@ async function processEventData(data) {
             var fs = require('fs'),
                 request = require('request');
 
-            var downloadImage = function (uri, filename, callback) {
-                request.head(uri, function (err, res, body) {
+            var downloadImage = function(uri, filename, callback) {
+                request.head(uri, function(err, res, body) {
                     if (res) {
                         request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
                     } else {
@@ -217,7 +251,7 @@ async function processEventData(data) {
 
             /*
             var imageToDownload;
-            
+
             if (congressId == 'vi-confluencias-belempa') {
                 imageToDownload = 'https://i.imgur.com/pPKBco9.jpg';
             } else if (congressId == 'x-cods-perspectiva-em-inovacao-e-governanca-belempa') {
@@ -228,7 +262,7 @@ async function processEventData(data) {
             */
             var imageToDownload = data.image;
 
-            downloadImage(imageToDownload, 'event_images_tmp/' + basename, function () {
+            downloadImage(imageToDownload, 'event_images_tmp/' + basename, function() {
                 console.log("Finished request for download event image (" + basename + ") (congressId = " + congressId + ").");
 
                 // Get dominant color
