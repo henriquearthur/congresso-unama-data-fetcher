@@ -29,7 +29,7 @@ function getEventsUrl() {
 
             var eventsUrl = [];
 
-            $(".ItemEvento").each(function(index, element) {
+            $(".ItemEvento").each(function (index, element) {
                 var titulo = $(element).find('span.Titulo').text().trim();
 
                 if (titulo.toLowerCase().includes('belém/pa')) {
@@ -93,7 +93,7 @@ function getEventData(url) {
             var eventTypes = [];
             var eventRegistration = [];
 
-            $(".Meio .EventoInfo table tbody tr:first-child td").each(function(index, element) {
+            $(".Meio .EventoInfo table tbody tr:first-child td").each(function (index, element) {
                 var registrationType = $(this).find('div').text();
                 eventTypes.push(registrationType);
             });
@@ -102,7 +102,7 @@ function getEventData(url) {
                 var type = eventTypes[index];
                 var elIndex = index + 1;
 
-                $(".Meio .EventoInfo table tbody tr:nth-child(n+2)").each(function(index, element) {
+                $(".Meio .EventoInfo table tbody tr:nth-child(n+2)").each(function (index, element) {
                     var td = $(this).find('td:nth-child(' + elIndex + ')');
                     var registrationDate = td.find('.data').text();
                     var registrationValue = td.find('.val').text();
@@ -121,26 +121,26 @@ function getEventData(url) {
             var lectures = [];
 
             // Para cada dia na aba Programação
-            $("#wt9_wtMainContent_wt2_wt47_wtProgramacaoContainer .ProgramacaoItem").each(function(index, element) {
+            $("#wt9_wtMainContent_wt2_wt47_wtProgramacaoContainer .ProgramacaoItem").each(function (index, element) {
                 var $el = $(element);
                 var date = $el.data('date');
 
                 // Para cada palestra deste dia
-                $el.find('.Item.OSInline').each(async function(index, elementLecture) {
+                $el.find('.Item.OSInline').each(async function (index, elementLecture) {
                     var $lecture = $(elementLecture);
 
                     // Hour
                     var hour = $lecture.find('div.Cinza').text().split('-');
-                    var hourStart = hour[0];
-                    var hourEnd = hour[1];
+                    var hourStart = hour[0].trim();
+                    var hourEnd = hour[1].trim();
 
                     // Lecture information
-                    var type = $lecture.find('span.Azul:nth-child(3)').text();
-                    var title = $lecture.find('span.Verde').text();
-                    var description = $lecture.find('.Wrapper.OSInline').text();
+                    var type = $lecture.find('span.Azul:nth-child(3)').text().trim();
+                    var title = $lecture.find('span.Verde').text().trim();
+                    var description = $lecture.find('.Wrapper.OSInline').text().trim();
 
                     // Speaker information
-                    var speakerName = $lecture.find('.ConferencistaImagem .Nome').text();
+                    var speakerName = $lecture.find('.ConferencistaImagem .Nome').text().trim();
                     var speakerImg = $lecture.find('.ConferencistaImagem img').attr('src') || '';
 
                     if (speakerImg != undefined && speakerImg != '') {
@@ -204,7 +204,7 @@ async function processEventData(data) {
             'link': data.link,
             'date_start': data.date_start,
             'date_end': data.date_end,
-        }).then(function() {
+        }).then(function () {
             // Location
             if (data.location != '') {
                 googleMapsClient.geocode({ address: data.location }).asPromise()
@@ -239,8 +239,8 @@ async function processEventData(data) {
             var fs = require('fs'),
                 request = require('request');
 
-            var downloadImage = function(uri, filename, callback) {
-                request.head(uri, function(err, res, body) {
+            var downloadImage = function (uri, filename, callback) {
+                request.head(uri, function (err, res, body) {
                     if (res) {
                         request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
                     } else {
@@ -262,7 +262,7 @@ async function processEventData(data) {
             */
             var imageToDownload = data.image;
 
-            downloadImage(imageToDownload, 'event_images_tmp/' + basename, function() {
+            downloadImage(imageToDownload, 'event_images_tmp/' + basename, function () {
                 console.log("Finished request for download event image (" + basename + ") (congressId = " + congressId + ").");
 
                 // Get dominant color
