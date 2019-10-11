@@ -71,7 +71,7 @@ function getEventData(url) {
             console.log("Extraindo dados do evento obtido (" + url + ")");
 
             var eventTitle = dom.window.document.title.split('| Eventos')[0].trim();
-            var eventDescription = $("#wt9_wtMainContent_wt2_wtTabContentsContainerDescricao .TabContent.ContainerTexto[data-tab='sobre']").text();
+            var eventDescription = $("#wt9_wtMainContent_wt2_wtTabContentsContainerDescricao .TabContent.ContainerTexto[data-tab='sobre']").text().trim().replace(/\n$/, "");
             var eventImg = $("#wt9_wtMainContent .ViewEvento > .Img img").attr('src');
             var eventLocation = $(".ContainerLocalizacao .Endereco:first-child .Dados").text();
             var eventLink = url;
@@ -178,12 +178,14 @@ async function processEventData(data) {
                         if (response.json.results.length > 0) {
                             var lat = response.json.results[0].geometry.location.lat;
                             var lng = response.json.results[0].geometry.location.lng;
+                            var address = response.json.results[0].formatted_address;
 
                             firebase.firestore.collection('2019_v1.1_congressos')
                                 .doc(congressId)
                                 .update({
                                     'location_lat': lat,
-                                    'location_lng': lng
+                                    'location_lng': lng,
+                                    'location_address': address,
                                 });
                         }
                     })
