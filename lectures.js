@@ -208,10 +208,10 @@ async function processEventData(data) {
     console.log("Inserindo informações gerais do evento no Firestore (" + congressId + ")");
 
     // Process date
-    var dateStartArr = data.date_start.split('-');
-    var dateStart = new Date(dateStartArr[2], dateStartArr[1], dateStartArr[0], 0, 0, 0, 0);
-    var dateEndArr = data.date_end.split('-');
-    var dateEnd = new Date(dateEndArr[2], dateEndArr[1], dateEndArr[0], 0, 0, 0, 0);
+    // var dateStartArr = data.date_start.split('-');
+    // var dateStart = new Date(dateStartArr[2], dateStartArr[1], dateStartArr[0], 0, 0, 0, 0);
+    // var dateEndArr = data.date_end.split('-');
+    // var dateEnd = new Date(dateEndArr[2], dateEndArr[1], dateEndArr[0], 0, 0, 0, 0);
 
     firebase.firestore.collection('2019_v1.1_congressos')
         .doc(congressId)
@@ -220,8 +220,8 @@ async function processEventData(data) {
             'description': data.description,
             'registration': data.registration,
             'link': data.link,
-            'date_start': dateStart,
-            'date_end': dateEnd,
+            'date_start': data.date_start,
+            'date_end': data.date_end,
         }).then(function () {
             // Location
             if (data.location != '') {
