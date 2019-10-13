@@ -5,6 +5,7 @@ const https = require('https');
 const jsdom = require("jsdom");
 
 const firebase = require('./firebase/firebase');
+const helpers = require('./helpers/helpers');
 const slugify = require('slugify');
 
 
@@ -136,8 +137,19 @@ function getEventData(url) {
 
                     // Lecture information
                     var type = $lecture.find('span.Azul:nth-child(3)').text().trim();
+
                     var title = $lecture.find('span.Verde').text().trim();
-                    var description = $lecture.find('.Wrapper.OSInline').text().trim();
+                    if (title.toUpperCase() == title) {
+                        title = helpers.toTitleCase(title);
+                    }
+
+                    var description = $lecture.find('.Wrapper.OSInline').html();
+
+                    if (description != undefined && description != '') {
+                        description = description.replace(/<br\s*[\/]?>/gi, "\n").replace(/&nbsp;/gi, '').trim();
+                    } else {
+                        description = '';
+                    }
 
                     // Speaker information
                     var speakerName = $lecture.find('.ConferencistaImagem .Nome').text().trim();
@@ -195,6 +207,12 @@ async function processEventData(data) {
     var congressId = slugify(data.title, { lower: true });
     console.log("Inserindo informações gerais do evento no Firestore (" + congressId + ")");
 
+    // Process date
+    var dateStartArr = data.date_start.split('-');
+    var dateStart = new Date(dateStartArr[2], dateStartArr[1], dateStartArr[0], 0, 0, 0, 0);
+    var dateEndArr = data.date_end.split('-');
+    var dateEnd = new Date(dateEndArr[2], dateEndArr[1], dateEndArr[0], 0, 0, 0, 0);
+
     firebase.firestore.collection('2019_v1.1_congressos')
         .doc(congressId)
         .set({
@@ -202,8 +220,8 @@ async function processEventData(data) {
             'description': data.description,
             'registration': data.registration,
             'link': data.link,
-            'date_start': data.date_start,
-            'date_end': data.date_end,
+            'date_start': dateStart,
+            'date_end': dateEnd,
         }).then(function () {
             // Location
             if (data.location != '') {
@@ -308,6 +326,11 @@ async function processEventData(data) {
             var url = 'https://eventos.sereduc.com' + lecture.speaker_details_url;
             lecture.speaker_details = await getSpeakerDetails(url);
         }
+
+        // Process date
+        //var lectureDateArr = lecture.date.split('-');
+        //var lectureDate = new Date(lectureDateArr[2], lectureDateArr[1], lectureDateArr[0], 0, 0, 0, 0);
+        //lecture.date = lectureDate;
 
         // Processando o objeto lecture
         var lectureId = slugify(congressId + '_' + lecture.title, { lower: true });
