@@ -3,6 +3,7 @@ event_images_tmp/*
 !event_images_tmp/.gitkeep
 backups/*
 !backups/.gitkeep
+firebase/congresso-*.json
 
 .history
 output.txt
