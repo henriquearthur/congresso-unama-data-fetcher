@@ -1,6 +1,8 @@
 /**
  * Imports
  */
+require('dotenv').config();
+
 const https = require('https');
 const jsdom = require("jsdom");
 
@@ -199,7 +201,7 @@ async function processEventData(data) {
 
     // Transformar nome do local em geocode
     const googleMapsClient = require('@google/maps').createClient({
-        key: 'AIzaSyDG4IHDx29bO1jyyvrJzq5hoVAHK730wXw',
+        key: process.env.API_KEY_GEOCODE,
         Promise: Promise
     });
 

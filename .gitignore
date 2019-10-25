@@ -4,6 +4,7 @@ event_images_tmp/*
 backups/*
 !backups/.gitkeep
 firebase/congresso-*.json
+.env
 
 .history
 output.txt
