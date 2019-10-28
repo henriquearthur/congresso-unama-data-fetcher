@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const firestoreService = require('firestore-export-import');
 const serviceAccount = require('./firebase/congresso-unama-firebase-adminsdk-smxjg-5c420f3c7d.json');
 const databaseURL = 'https://congresso-unama.firebaseio.com';
@@ -30,7 +32,7 @@ firestoreService
                     secure: false,
                     auth: {
                         user: 'eu@henriquearthur.com.br',
-                        pass: 'AYSSs1eXgPK0'
+                        pass: process.env.EMAIL_PASS
                     }
                 },
                 mail: {
