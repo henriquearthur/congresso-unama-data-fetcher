@@ -80,6 +80,8 @@ function getEventData(url) {
             var eventLocation = $(".ContainerLocalizacao .Endereco:first-child .Dados").text();
             var eventLink = url;
 
+            var congressId = slugify(eventTitle, { lower: true });
+
             // Event date
             var eventDateText = $("#wt9_wtMainContent .ViewEvento .Data").text();
             var eventDateArr = eventDateText.split('até');
@@ -167,14 +169,38 @@ function getEventData(url) {
                     // [Congress-Specific] Adding 'tag'
                     var tag = null;
 
-                    if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS II')) {
-                        tag = 'Artes visuais e Matemática';
-                    } else if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS I')) {
-                        tag = 'Informática';
-                    } else if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS')) {
-                        tag = 'Arquitetura e Design';
-                    } else if (description.toUpperCase().includes('AUDITÓRIO UMARIZAL')) {
-                        tag = 'Engenharias';
+                    if (congressId == '4-congresso-nacional-de-ciencias-exatas-e-tecnologia-belempa') {
+                        if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS II')) {
+                            tag = 'Artes visuais e Matemática';
+                        } else if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS I')) {
+                            tag = 'Informática';
+                        } else if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS')) {
+                            tag = 'Arquitetura e Design';
+                        } else if (description.toUpperCase().includes('AUDITÓRIO UMARIZAL')) {
+                            tag = 'Engenharias';
+                        }
+
+                        if (title == 'Hall- Exposição De Artigos( Arquitetura E Design)') {
+                            tag = 'Arquitetura e Design';
+
+                            title = 'Exposição de artigos (Arquitetura e Design)';
+                            description = 'Ocorrerá no Hall';
+                        } else if (title == 'Hall- Exposição De Artigos( Eng. De Prod, Elétrica, Mecânica, Amb E Sanitária )') {
+                            tag = 'Engenharias';
+
+                            title = 'Exposição de artigos (Engenharia de Produção, Elétrica, Mecânica, Ambiental e Sanitária)';
+                            description = 'Ocorrerá no Hall';
+                        } else if (title == 'Hall- Exposição De Artigos( Matemática E Artes Visuais )') {
+                            tag = 'Artes visuais e Matemática';
+
+                            title = 'Exposição de artigos (Artes visuais e Matemática)';
+                            description = 'Ocorrerá no Hall';
+                        } else if (title == 'Hall- Exposição De Artigos ( Tecnologias )') {
+                            tag = 'Informática';
+
+                            title = 'Exposição de artigos (Tecnologias)';
+                            description = 'Ocorrerá no Hall';
+                        }
                     }
 
                     lectures.push({
