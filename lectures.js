@@ -164,6 +164,19 @@ function getEventData(url) {
                     // Get speaker details
                     var speakerDetailsUrl = $lecture.find('.ConferencistaImagem').parent().attr('href');
 
+                    // [Congress-Specific] Adding 'tag'
+                    var tag = null;
+
+                    if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS II')) {
+                        tag = 'Artes visuais e Matemática';
+                    } else if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS I')) {
+                        tag = 'Informática';
+                    } else if (description.toUpperCase().includes('AUDITÓRIO BATISTA CAMPOS')) {
+                        tag = 'Arquitetura e Design';
+                    } else if (description.toUpperCase().includes('AUDITÓRIO UMARIZAL')) {
+                        tag = 'Engenharias';
+                    }
+
                     lectures.push({
                         'date': date,
                         'hour_start': hourStart,
@@ -171,6 +184,7 @@ function getEventData(url) {
                         'type': type,
                         'title': title,
                         'description': description,
+                        'tag': tag,
                         'speaker_name': speakerName,
                         'speaker_img': speakerImg,
                         'speaker_details_url': speakerDetailsUrl,
@@ -214,6 +228,7 @@ async function processEventData(data) {
     // var dateStart = new Date(dateStartArr[2], dateStartArr[1], dateStartArr[0], 0, 0, 0, 0);
     // var dateEndArr = data.date_end.split('-');
     // var dateEnd = new Date(dateEndArr[2], dateEndArr[1], dateEndArr[0], 0, 0, 0, 0);
+
 
     firebase.firestore.collection('2019_v1.1_congressos')
         .doc(congressId)
