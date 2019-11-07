@@ -199,7 +199,7 @@ function getEventData(url) {
                             tag = 'Informática';
 
                             title = 'Exposição de artigos (Tecnologias)';
-                            description = 'Ocorrerá no Hall';
+                            description = 'Ocorrerá no Hall\n\nQuer saber mais sobre como esse app foi desenvolvido? Passe pelo Hall às 17h. :)';
                         }
                     }
 
